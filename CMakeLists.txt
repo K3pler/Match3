@@ -1,41 +1,50 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14)
 project(Project)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# Указываем путь к вручную установленной SFML
-set(SFML_DIR "D:/SFML-2.6.1/lib/cmake/SFML")
+include(FetchContent)
 
-find_package(SFML 2.6 CONFIG REQUIRED COMPONENTS graphics window system)
-find_package(unofficial-sqlite3 CONFIG REQUIRED)
+# SFML
+set(SFML_BUILD_AUDIO OFF)
+set(SFML_BUILD_NETWORK OFF)
 
-add_executable(Project main.cpp)
+FetchContent_Declare(
+        sfml
+        GIT_REPOSITORY https://github.com/SFML/SFML.git
+        GIT_TAG 2.6.1
+)
+FetchContent_MakeAvailable(sfml)
+
+# SQLite3
+add_executable(Project main.cpp sqlite3.c)
+
 
 target_link_libraries(Project PRIVATE
         sfml-graphics
         sfml-window
         sfml-system
-        unofficial::sqlite3::sqlite3
 )
 
-
-# Путь к MinGW из CLion
-set(MINGW_BIN_DIR "C:/Program Files/JetBrains/CLion 2026.1/bin/mingw/bin")
-
-# Копируем DLL MinGW
-file(GLOB MINGW_DLLS "${MINGW_BIN_DIR}/libstdc++-6.dll" "${MINGW_BIN_DIR}/libgcc_s_seh-1.dll")
-foreach(DLL ${MINGW_DLLS})
+# Копирование шрифта
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/arial.ttf)
     add_custom_command(TARGET Project POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${DLL}" $<TARGET_FILE_DIR:Project>)
-endforeach()
+            ${CMAKE_CURRENT_SOURCE_DIR}/arial.ttf
+            $<TARGET_FILE_DIR:Project>
+    )
+endif()
 
-# Копируем DLL-файлы SFML
+# Копирование DLL SFML
+if(WIN32)
+    set(SFML_DLL_DIR "${CMAKE_BINARY_DIR}/_deps/sfml-build/lib")
+    file(GLOB SFML_DLLS "${SFML_DLL_DIR}/*.dll")
+    foreach(DLL ${SFML_DLLS})
+        add_custom_command(TARGET Project POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${DLL}" $<TARGET_FILE_DIR:Project>
+        )
+    endforeach()
+endif()
 
-set(SFML_BIN_DIR "D:/SFML-2.6.1/bin")
-file(GLOB SFML_DLLS "${SFML_BIN_DIR}/*.dll")
-foreach(DLL ${SFML_DLLS})
-    add_custom_command(TARGET Project POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${DLL}" $<TARGET_FILE_DIR:Project>)
-endforeach()
+message(STATUS "Project configured!")
