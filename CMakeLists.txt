@@ -37,14 +37,10 @@ endif()
 
 # Копирование DLL SFML
 if(WIN32)
-    set(SFML_DLL_DIR "${CMAKE_BINARY_DIR}/_deps/sfml-build/lib")
-    file(GLOB SFML_DLLS "${SFML_DLL_DIR}/*.dll")
-    foreach(DLL ${SFML_DLLS})
-        add_custom_command(TARGET Project POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${DLL}" $<TARGET_FILE_DIR:Project>
-        )
-    endforeach()
-endif()
-
-message(STATUS "Project configured!")
+    add_custom_command(TARGET Project POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "$<TARGET_RUNTIME_DLLS:Project>"
+    $<TARGET_FILE_DIR:Project>
+    COMMAND_EXPAND_LISTS
+    )
+endif ()
