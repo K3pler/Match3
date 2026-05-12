@@ -28,10 +28,10 @@ target_link_libraries(Project PRIVATE
 )
 
 # Копирование шрифта
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/arial.ttf)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/arial.otf)
     add_custom_command(TARGET Project POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            ${CMAKE_CURRENT_SOURCE_DIR}/arial.ttf
+            ${CMAKE_CURRENT_SOURCE_DIR}/arial.otf
             $<TARGET_FILE_DIR:Project>
     )
 endif()

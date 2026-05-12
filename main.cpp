@@ -11,7 +11,7 @@ using namespace sf;
 
 // КОНСТАНТЫ РАЗМЕРОВ
 
-const int SIZE = 6;              // Размер поля 6x6
+const int SIZE = 8;              // Размер поля 8x8
 const int TILE = 64;             // Размер одной клетки (пикселей)
 const int WIDTH = SIZE * TILE;   // Ширина окна
 const int HEIGHT = SIZE * TILE + 120;  // Высота окна (+120 для текста)
@@ -74,10 +74,10 @@ void Database::close() { if (db) sqlite3_close(db); }
 // ЦВЕТА ФИШЕК
 
 Color colors[4] =
-    {Color::Red,
-    Color::Green,
-    Color::Blue,
-    Color::Yellow};
+    {Color (87,168,83),
+    Color (102,255,255),
+    Color (244,150,158),
+    Color (255,221,69)};
 
 
 // ФУНКЦИЯ 1: ПОИСК КОМБИНАЦИЙ
@@ -136,13 +136,13 @@ bool findMatches(int board[SIZE][SIZE], bool match[SIZE][SIZE]) {
 
 // Действие:
 //   1. Заменяем отмеченные фишки на -1 (пустота)
-//   2. Начисляем +10 очков за каждую удалённую фишку
+//   2. Начисляем +11 очков за каждую удалённую фишку
 void removeMatches(int board[SIZE][SIZE], bool match[SIZE][SIZE], int& score) {
     for (int y = 0; y < SIZE; y++) {
         for (int x = 0; x < SIZE; x++) {
             if (match[y][x]) {
                 board[y][x] = -1;   // -1 означает "пустая клетка"
-                score += 10;         // +10 очков
+                score += 11;         // +11 очков
             }
         }
     }
@@ -245,7 +245,7 @@ int main() {
     window.setFramerateLimit(60);
 
     Font font;
-    font.loadFromFile("arial.ttf"); // Загрузка шрифта
+    font.loadFromFile("arial.otf"); // Загрузка шрифта
 
     Database db;
     db.open();  // Открытие БД
