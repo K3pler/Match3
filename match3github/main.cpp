@@ -16,6 +16,11 @@ const int TILE = 64;             // Размер одной клетки (пик
 const int WIDTH = SIZE * TILE;   // Ширина окна
 const int HEIGHT = SIZE * TILE + 120;  // Высота окна (+120 для текста)
 
+// СМЕЩЕНИЕ ДЛЯ ЦЕНТРИРОВАНИЯ
+const int FIELD_WIDTH = SIZE * TILE;     // 512
+const int FIELD_HEIGHT = SIZE * TILE;    // 512
+const int OFFSET_X = (WIDTH - FIELD_WIDTH) / 2;     // 0
+const int OFFSET_Y = (HEIGHT - FIELD_HEIGHT - 20) / 2;  // отступ сверху
 
 // КЛАСС БАЗЫ ДАННЫХ
 
@@ -244,12 +249,24 @@ int main() {
     RenderWindow window(VideoMode(WIDTH, HEIGHT), "Match-3");
     window.setFramerateLimit(60);
 
+    // ЗАГРУЗКА ФОНОВОГО ИЗОБРАЖЕНИЯ
+    Texture bgTexture;
+    Sprite bgSprite;
+    bgTexture.loadFromFile("background.png");
+    bgSprite.setTexture(bgTexture);
+    bgSprite.setScale(WIDTH / (float)bgTexture.getSize().x, HEIGHT / (float)bgTexture.getSize().y);
+
     Font font;
     font.loadFromFile("arial.otf"); // Загрузка шрифта
 
     Database db;
     db.open();  // Открытие БД
 
+    // ЗАГРУЗКА ИКОНКИ ОКНА
+    Image icon;
+    if (icon.loadFromFile("icon.png")) {
+        window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+    }
 
     // 2. СОЗДАНИЕ ИГРОВОГО ПОЛЯ
 
@@ -274,25 +291,25 @@ int main() {
 
     // 4. ТЕКСТОВЫЕ ОБЪЕКТЫ SFML
 
-    Text title("MATCH-3", font, 40);
-    title.setPosition(WIDTH/2 - 80, 20);
-    title.setFillColor(Color::Yellow);
+    Text title("MATCH 3", font, 40);
+    title.setPosition(WIDTH/2 - 80, 100);
+    title.setFillColor(Color (233,154,196));
 
     Text info("SPACE - Start | H - Records | ESC - Exit", font, 16);
-    info.setPosition(WIDTH/2 - 180, HEIGHT - 30);
+    info.setPosition(WIDTH/2 - 180, HEIGHT - 140);
     info.setFillColor(Color::Green);
 
     Text scoreText("", font, 18);
     scoreText.setPosition(10, HEIGHT - 60);
-    scoreText.setFillColor(Color::White);
+    scoreText.setFillColor(Color(000,000,000));
 
     Text bestText("", font, 18);
-    bestText.setPosition(WIDTH - 120, HEIGHT - 60);
-    bestText.setFillColor(Color::Yellow);
+    bestText.setPosition(WIDTH - 120, HEIGHT - 130);
+    bestText.setFillColor(Color (233,154,196));
 
     Text highScoresTitle("HIGH SCORES", font, 28);
-    highScoresTitle.setPosition(WIDTH/2 - 90, 50);
-    highScoresTitle.setFillColor(Color::Yellow);
+    highScoresTitle.setPosition(WIDTH/2 - 80, 100);
+    highScoresTitle.setFillColor(Color(233,154,196));
 
 
     // 5. ГЛАВНЫЙ ИГРОВОЙ ЦИКЛ
@@ -337,8 +354,10 @@ int main() {
 
             // Клик мыши
             if (inGame && event.type == Event::MouseButtonPressed && event.mouseButton.button == Mouse::Left) {
-                int x = Mouse::getPosition(window).x / TILE;
-                int y = Mouse::getPosition(window).y / TILE;
+                int mouseX = Mouse::getPosition(window).x;
+                int mouseY = Mouse::getPosition(window).y;
+                int x = (mouseX - OFFSET_X) / TILE;
+                int y = (mouseY - OFFSET_Y) / TILE;
 
                 if (x >= 0 && x < SIZE && y >= 0 && y < SIZE) {
                     if (!waiting) {
@@ -381,21 +400,22 @@ int main() {
 
         // 5.3 ОТРИСОВКА (рендеринг)
 
-        window.clear(Color(20, 20, 40));
+        window.clear();
+        if (bgTexture.getSize().x > 0) window.draw(bgSprite);
 
         if (showHighScores) {
             //ТАБЛИЦА РЕКОРДОВ
             window.draw(highScoresTitle);
 
-            float y = 100;
+            float y = 150;
             Text header1("Score", font, 18);
             header1.setPosition(WIDTH/2 - 80, y);
-            header1.setFillColor(Color::Yellow);
+            header1.setFillColor(Color::Black);
             window.draw(header1);
 
             Text header2("Time(s)", font, 18);
             header2.setPosition(WIDTH/2 + 20, y);
-            header2.setFillColor(Color::Yellow);
+            header2.setFillColor(Color::Black);
             window.draw(header2);
             y += 30;
 
@@ -422,8 +442,8 @@ int main() {
             }
 
             Text backText("Press ESC to return", font, 16);
-            backText.setPosition(WIDTH/2 - 100, HEIGHT - 50);
-            backText.setFillColor(Color(150,150,150));
+            backText.setPosition(WIDTH/2 - 80, HEIGHT - 150);
+            backText.setFillColor(Color::Black);
             window.draw(backText);
 
         } else if (!inGame) {
@@ -438,9 +458,9 @@ int main() {
                 for (int x = 0; x < SIZE; x++) {
                     if (board[y][x] >= 0) {
                         RectangleShape rect(Vector2f(TILE - 4, TILE - 4));
-                        rect.setPosition(x * TILE + 2, y * TILE + 2);
+                        rect.setPosition(x * TILE + OFFSET_X + 2, y * TILE + OFFSET_Y + 2);
                         rect.setFillColor(colors[board[y][x] % 4]);
-                        rect.setOutlineColor(Color::Black);
+                        rect.setOutlineColor(Color::Transparent);
                         rect.setOutlineThickness(2);
                         window.draw(rect);
                     }
@@ -450,7 +470,7 @@ int main() {
             // Рамка выбранной фишки
             if (waiting && selectedX >= 0) {
                 RectangleShape hl(Vector2f(TILE, TILE));
-                hl.setPosition(selectedX * TILE, selectedY * TILE);
+                hl.setPosition(selectedX * TILE + OFFSET_X, selectedY * TILE + OFFSET_Y);
                 hl.setFillColor(Color::Transparent);
                 hl.setOutlineColor(Color::Yellow);
                 hl.setOutlineThickness(3);
