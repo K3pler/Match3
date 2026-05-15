@@ -36,6 +36,22 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/arial.otf)
     )
 endif()
 
+#Копирование иконки в папку с программой
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/icon.png)
+    add_custom_command(TARGET Project POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_SOURCE_DIR}/icon.png
+        $<TARGET_FILE_DIR:Project>
+    )
+endif()
+#копирование фона
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/background.png)
+    add_custom_command(TARGET Project POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${CMAKE_CURRENT_SOURCE_DIR}/background.png
+            $<TARGET_FILE_DIR:Project>)
+endif()
+
 # Копирование DLL SFML
 if(WIN32)
     add_custom_command(TARGET Project POST_BUILD
