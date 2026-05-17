@@ -18,7 +18,14 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(sfml)
 
 # SQLite3
-add_executable(Project main.cpp sqlite3.c)
+add_executable(Project main.cpp sqlite3.c
+        Game.cpp
+        Game.h
+        Database.cpp
+        Database.h
+        Gamelogic.cpp
+        Gamelogic.h
+        Constants.h)
 
 
 target_link_libraries(Project PRIVATE
@@ -27,24 +34,21 @@ target_link_libraries(Project PRIVATE
         sfml-system
 )
 
-# Копирование шрифта
+# Копирование ресурсов
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/arial.otf)
     add_custom_command(TARGET Project POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
             ${CMAKE_CURRENT_SOURCE_DIR}/arial.otf
-            $<TARGET_FILE_DIR:Project>
-    )
+            $<TARGET_FILE_DIR:Project>)
 endif()
 
-#Копирование иконки в папку с программой
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/icon.png)
     add_custom_command(TARGET Project POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/icon.png
-        $<TARGET_FILE_DIR:Project>
-    )
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${CMAKE_CURRENT_SOURCE_DIR}/icon.png
+            $<TARGET_FILE_DIR:Project>)
 endif()
-#копирование фона
+
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/background.png)
     add_custom_command(TARGET Project POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
